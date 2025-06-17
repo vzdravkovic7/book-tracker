@@ -1,0 +1,55 @@
+# === Global ===
+.DS_Store
+Thumbs.db
+.env
+*.log
+*.tmp
+
+# === Node / React ===
+client/node_modules/
+client/.env
+client/.next/
+client/dist/
+client/build/
+
+# === .NET / C# ===
+**/[Bb]in/
+**/[Oo]bj/
+**/*.user
+**/*.suo
+**/*.userosscache
+**/*.sln.docstates
+**/*.pdb
+*.db-shm
+*.db-wal
+*.db
+
+# dotnet secrets
+**/secrets.json
+
+# Visual Studio / Rider / VSCode
+.vscode/
+.idea/
+*.sln.cache
+*.vs/
+
+# === OS / Tools ===
+*.swp
+*.swn
+*.swo
+
+# === Logs ===
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# === Docker ===
+docker-compose.override.yml
+*.pid
+
+# === Optional: PostgreSQL dump files ===
+*.dump
+*.pgsql
+*.sql
