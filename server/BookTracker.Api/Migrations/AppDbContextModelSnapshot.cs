@@ -41,8 +41,9 @@ namespace BookTracker.Api.Migrations
                         .HasColumnType("text")
                         .HasColumnName("review");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer")
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
                         .HasColumnName("status");
 
                     b.Property<string>("Title")

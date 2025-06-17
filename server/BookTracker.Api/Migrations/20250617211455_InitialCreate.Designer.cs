@@ -11,7 +11,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BookTracker.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250617200618_InitialCreate")]
+    [Migration("20250617211455_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -44,8 +44,9 @@ namespace BookTracker.Api.Migrations
                         .HasColumnType("text")
                         .HasColumnName("review");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer")
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
                         .HasColumnName("status");
 
                     b.Property<string>("Title")

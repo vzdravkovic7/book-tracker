@@ -24,6 +24,12 @@ if (app.Environment.IsDevelopment()) {
     app.UseSwaggerUI();
 }
 
+using (var scope = app.Services.CreateScope()) {
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();           // Ensure DB is created
+    db.SeedFromJsonFiles();          // Load seed data
+}
+
 app.UseHttpsRedirection();
 app.MapGet("/", () => "Book Tracker API is running!");
 
