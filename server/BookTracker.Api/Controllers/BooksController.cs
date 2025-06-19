@@ -27,6 +27,18 @@ public class BooksController : ControllerBase {
         return Ok(dtos);
     }
 
+    [HttpGet("{id}")]
+    public async Task<ActionResult<BookReadDTO>> GetBookById(Guid id) {
+        var userId = GetUserId();
+        var book = await _context.Books.FirstOrDefaultAsync(b => b.Id == id && b.UserId == userId);
+
+        if (book == null)
+            return NotFound();
+
+        return Ok(BookMapper.ToReadDTO(book));
+    }
+
+
     [HttpPost]
     public async Task<ActionResult<BookReadDTO>> CreateBook([FromBody] BookCreateDTO dto) {
         var userId = GetUserId();
