@@ -26,6 +26,16 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 
+// Configure CORS
+var corsPolicyName = "AllowFrontend";
+builder.Services.AddCors(options => {
+    options.AddPolicy(name: corsPolicyName, policy => {
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 // Configure JWT Authentication
 var jwtKey = builder.Configuration["Jwt:Key"];
 var jwtIssuer = builder.Configuration["Jwt:Issuer"];
@@ -67,6 +77,9 @@ if (app.Environment.IsDevelopment()) {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+// Enable CORS before auth
+app.UseCors(corsPolicyName);
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
