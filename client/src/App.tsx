@@ -5,16 +5,48 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import BookForm from "./components/BookForm";
+import Layout from "./components/Layout";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const App: React.FC = () => {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/dashboard" />} />
+      {/* Public routes */}
+      <Route path="/" element={<Navigate to="/login" />} />
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/add" element={<BookForm />} />
-      <Route path="/edit/:id" element={<BookForm />} />
+
+      {/* Protected routes */}
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <Dashboard />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/add"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <BookForm />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/edit/:id"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <BookForm />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   );
 };
