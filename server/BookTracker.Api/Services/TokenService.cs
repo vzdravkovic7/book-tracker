@@ -13,9 +13,9 @@ public class TokenService {
     public string CreateToken(User user) {
         var claims = new[]
         {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.Name, user.Username)
+            new Claim("userId", user.Id.ToString()),
+            new Claim("email", user.Email),
+            new Claim("username", user.Username)
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
