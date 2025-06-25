@@ -107,18 +107,20 @@ This project is built to practice full-stack development using:
 
 src/
 ├── components/
-│ ├── BookCard.jsx
-│ ├── BookForm.jsx
-│ └── AuthForm.jsx
+│ ├── BookCard.tsx
+│ ├── BookForm.tsx
+│ └── AuthForm.tsx
 ├── pages/
-│ ├── Dashboard.jsx
-│ ├── Login.jsx
-│ └── Register.jsx
+│ ├── Dashboard.tsx
+│ ├── Login.tsx
+│ └── Register.tsx
 ├── services/
-│ ├── api.js
-│ └── authService.js
-├── App.jsx
-└── main.jsx
+│ ├── api.ts
+│ └── authService.ts
+├── types/
+│ └── index.ts
+├── App.tsx
+└── main.tsx
 
 ### Backend (`/server`)
 
