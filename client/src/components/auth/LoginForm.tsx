@@ -24,8 +24,12 @@ const LoginForm: React.FC = () => {
       setLoading(true);
       await authService.login(form);
       navigate("/dashboard");
-    } catch {
-      setError("Invalid email or password.");
+    } catch (err: any) {
+      if (err.response?.status === 401) {
+        setError(err.response.data || "Unauthorized");
+      } else {
+        setError("Something went wrong.");
+      }
     } finally {
       setLoading(false);
     }

@@ -7,6 +7,8 @@ import Dashboard from "./pages/Dashboard";
 import BookForm from "./components/books/BookForm";
 import Layout from "./components/layout/Layout";
 import ProtectedRoute from "./components/routes/ProtectedRoute";
+import Profile from "./pages/Profile";
+import EditProfile from "./pages/EditProfile";
 
 const App: React.FC = () => {
   const token = localStorage.getItem("token");
@@ -61,6 +63,26 @@ const App: React.FC = () => {
           <ProtectedRoute>
             <Layout>
               <BookForm />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <Profile />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/edit-profile"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <EditProfile />
             </Layout>
           </ProtectedRoute>
         }

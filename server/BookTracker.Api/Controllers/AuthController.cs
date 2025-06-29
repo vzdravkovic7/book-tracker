@@ -19,9 +19,16 @@ public class AuthController : ControllerBase {
             return BadRequest("Email already exists.");
 
         var user = new User {
+            FirstName = dto.FirstName,
+            LastName = dto.LastName,
+            Address = dto.Address,
+            PhoneNumber = dto.PhoneNumber,
             Username = dto.Username,
             Email = dto.Email,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password)
+            ProfileImageUrl = dto.ProfileImageUrl,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+            RegistrationDate = DateTime.UtcNow,
+            IsActive = true
         };
 
         _context.Users.Add(user);
@@ -35,6 +42,9 @@ public class AuthController : ControllerBase {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
         if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
             return Unauthorized("Invalid credentials");
+
+        if (!user.IsActive)
+            return Unauthorized("User account is deactivated");
 
         var token = _tokenService.CreateToken(user);
         return Ok(new { token });

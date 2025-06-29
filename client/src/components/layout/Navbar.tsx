@@ -64,6 +64,12 @@ const Navbar: React.FC = () => {
             >
               Add Book
             </Link>
+            <Link
+              to="/profile"
+              className="text-sm bg-accent hover:bg-accentDark text-white px-4 py-2 rounded transition-colors duration-300"
+            >
+              Profile
+            </Link>
             <button
               onClick={handleLogout}
               className="text-sm bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded transition-colors duration-300"
