@@ -16,9 +16,16 @@ namespace BookTracker.Api.Migrations
                 columns: table => new
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
+                    first_name = table.Column<string>(type: "text", nullable: false),
+                    last_name = table.Column<string>(type: "text", nullable: false),
+                    address = table.Column<string>(type: "text", nullable: false),
+                    phone_number = table.Column<string>(type: "text", nullable: false),
                     username = table.Column<string>(type: "text", nullable: false),
                     email = table.Column<string>(type: "text", nullable: false),
-                    password_hash = table.Column<string>(type: "text", nullable: false)
+                    password_hash = table.Column<string>(type: "text", nullable: false),
+                    profile_image_url = table.Column<string>(type: "text", nullable: true),
+                    registration_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    is_active = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
