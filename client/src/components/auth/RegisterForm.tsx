@@ -1,15 +1,21 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import authService from "../../services/authService";
-import userService from "../../services/userService";
+import { isPhoneValid, isPasswordConfirmed } from "../../utils/formValidators";
+import { baseUserFields, passwordFields } from "../../config/formFieldConfigs";
 
-import TextInput from "../common/TextInput";
-import PasswordInput from "../common/PasswordInput";
 import FormError from "../common/FormError";
 import LoadingButton from "../common/LoadingButton";
+import ProfileImageUpload from "../common/ProfileImageUpload";
+import FormFields, { type FormField } from "../common/FormFields";
+
+import type { RegisterDTO } from "../../types";
+import { useImagePreview } from "../../hooks/useImagePreview";
+import { getFileFromInputEvent } from "../../utils/imageUtils";
+import { useFormState } from "../../hooks/useFormState";
 
 const RegisterForm: React.FC = () => {
-  const [form, setForm] = useState({
+  const { form, handleChange } = useFormState<RegisterDTO>({
     firstName: "",
     lastName: "",
     address: "",
@@ -17,67 +23,48 @@ const RegisterForm: React.FC = () => {
     username: "",
     email: "",
     password: "",
-    confirmPassword: "",
+    profileImageUrl: undefined,
   });
 
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
-  const [passwordMismatch, setPasswordMismatch] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setForm((prev) => {
-      const updated = { ...prev, [name]: value };
-      if (name === "password" || name === "confirmPassword") {
-        setPasswordMismatch(updated.password !== updated.confirmPassword);
-      }
-      return updated;
-    });
-  };
+  const { preview, selectedFile, handleImageChange } = useImagePreview();
 
-  const handleImagePreview = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = () => setPreviewImage(reader.result as string);
-    reader.readAsDataURL(file);
-  };
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files?.[0]) return;
-    const file = e.target.files[0];
-    setProfileImageFile(file);
-    handleImagePreview(file);
+  const onImageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = getFileFromInputEvent(e);
+    handleImageChange(file);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    if (form.password !== form.confirmPassword) {
-      setPasswordMismatch(true);
+    if (!isPhoneValid(form.phoneNumber)) {
+      setError("Invalid phone number format.");
+      return;
+    }
+
+    if (!isPasswordConfirmed(form.password, confirmPassword)) {
       setError("Passwords do not match.");
       return;
     }
 
     try {
       setLoading(true);
-
-      let profileImageUrl: string | undefined = undefined;
-
-      if (profileImageFile) {
-        profileImageUrl = await userService.uploadProfileImage(
-          profileImageFile,
-          true
-        );
+      const formData = new FormData();
+      Object.entries(form).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          formData.append(key, value);
+        }
+      });
+      if (selectedFile) {
+        formData.append("profileImage", selectedFile);
       }
 
-      await authService.register({
-        ...form,
-        profileImageUrl,
-      });
-
+      await authService.registerFormData(formData);
       navigate("/login");
     } catch {
       setError("Registration failed. Try again.");
@@ -85,6 +72,16 @@ const RegisterForm: React.FC = () => {
       setLoading(false);
     }
   };
+
+  const fields: FormField[] = [
+    ...baseUserFields(form, handleChange),
+    ...passwordFields(
+      form.password,
+      confirmPassword,
+      setConfirmPassword,
+      handleChange
+    ),
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-backgroundLight to-background dark:from-background dark:to-backgroundLight flex items-center justify-center px-4 transition-colors duration-300">
@@ -98,88 +95,13 @@ const RegisterForm: React.FC = () => {
 
         <FormError message={error} />
 
-        <div className="flex flex-col items-center gap-2">
-          <img
-            src={previewImage || "/Images/profile/default.jpg"}
-            alt="Preview"
-            className="w-28 h-28 rounded-full object-cover border"
-          />
-          <label className="text-sm font-medium mt-2">
-            <span className="block text-center mb-1">Upload Profile Image</span>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-              className="block w-full text-sm text-gray-500
-                 file:mr-4 file:py-2 file:px-4
-                 file:rounded-lg file:border-0
-                 file:text-sm file:font-semibold
-                 file:bg-primary file:text-white
-                 hover:file:bg-secondary
-                 transition-colors duration-300 cursor-pointer"
-            />
-          </label>
-        </div>
-
-        <TextInput
-          name="firstName"
-          label="First Name"
-          value={form.firstName}
-          onChange={handleChange}
-          required
-        />
-        <TextInput
-          name="lastName"
-          label="Last Name"
-          value={form.lastName}
-          onChange={handleChange}
-          required
-        />
-        <TextInput
-          name="address"
-          label="Address"
-          value={form.address}
-          onChange={handleChange}
-          required
-        />
-        <TextInput
-          name="phoneNumber"
-          label="Phone Number"
-          value={form.phoneNumber}
-          onChange={handleChange}
-          required
-        />
-        <TextInput
-          name="username"
-          label="Username"
-          value={form.username}
-          onChange={handleChange}
-          required
-        />
-        <TextInput
-          name="email"
-          type="email"
-          label="Email"
-          value={form.email}
-          onChange={handleChange}
-          required
+        <ProfileImageUpload
+          previewUrl={preview}
+          onFileChange={onImageInputChange}
+          label="Upload Profile Image"
         />
 
-        <PasswordInput
-          name="password"
-          label="Password"
-          value={form.password}
-          onChange={handleChange}
-          required
-        />
-        <PasswordInput
-          name="confirmPassword"
-          label="Confirm Password"
-          value={form.confirmPassword}
-          onChange={handleChange}
-          required
-          showError={passwordMismatch}
-        />
+        <FormFields fields={fields} />
 
         <LoadingButton loading={loading} text="Register" />
 

@@ -8,7 +8,7 @@ interface LoadingButtonProps {
 const LoadingButton: React.FC<LoadingButtonProps> = ({ loading, text }) => (
   <button
     type="submit"
-    className="w-full py-3 bg-primary hover:bg-secondary active:bg-blue-900 rounded-lg text-white font-semibold text-sm tracking-wide transition-all shadow-md hover:shadow-lg flex items-center justify-center disabled:opacity-60"
+    className="w-full py-3 bg-primary hover:bg-secondary active:bg-blue-900 rounded-lg text-white font-semibold text-sm tracking-wide transition-all shadow-md hover:shadow-lg flex items-center justify-center disabled:opacity-60 dark:bg-blue-400 dark:hover:bg-blue-600 dark:text-gray-900"
     disabled={loading}
   >
     {loading && (

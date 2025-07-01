@@ -53,13 +53,17 @@ const BookCard: React.FC<Props> = ({ book, onDelete }) => {
         <div className="flex gap-3 pt-2">
           <button
             onClick={handleEdit}
-            className="flex-1 py-2 text-sm bg-primary hover:bg-secondary text-white rounded-lg transition-colors duration-300"
+            className="flex-1 py-2 text-sm rounded-lg transition-colors duration-300 
+            bg-primary hover:bg-secondary text-white 
+            dark:bg-blue-400 dark:hover:bg-blue-600 dark:text-gray-900"
           >
             Edit
           </button>
           <button
             onClick={() => setConfirmOpen(true)}
-            className="flex-1 py-2 text-sm bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors duration-300"
+            className="flex-1 py-2 text-sm rounded-lg transition-colors duration-300 
+            bg-red-500 hover:bg-red-600 text-white 
+            dark:bg-red-400 dark:hover:bg-red-600 dark:text-gray-900"
           >
             Delete
           </button>

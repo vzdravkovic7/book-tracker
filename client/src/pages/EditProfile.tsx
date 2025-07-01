@@ -1,24 +1,37 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import userService, {
-  type EditUserDTO,
-  type User,
-} from "../services/userService";
 
-import TextInput from "../components/common/TextInput";
-import PasswordInput from "../components/common/PasswordInput";
-import LoadingButton from "../components/common/LoadingButton";
 import FormError from "../components/common/FormError";
+import LoadingButton from "../components/common/LoadingButton";
+import ProfileImageUpload from "../components/common/ProfileImageUpload";
+import FormFields, { type FormField } from "../components/common/FormFields";
+
+import userService from "../services/userService";
+import type { EditUserDTO, User } from "../types";
+import { useImagePreview } from "../hooks/useImagePreview";
+import { getFileFromInputEvent } from "../utils/imageUtils";
+import { isPhoneValid, isPasswordConfirmed } from "../utils/formValidators";
+import { baseUserFields } from "../config/formFieldConfigs";
 
 const EditProfile: React.FC = () => {
   const [form, setForm] = useState<EditUserDTO | null>(null);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+
   const navigate = useNavigate();
+
+  const {
+    preview: previewImage,
+    selectedFile,
+    handleImageChange,
+  } = useImagePreview();
+
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = getFileFromInputEvent(e);
+    handleImageChange(file);
+  };
 
   useEffect(() => {
     userService.getMe().then((data: User) => {
@@ -39,51 +52,37 @@ const EditProfile: React.FC = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const validatePhone = (phone: string) => {
-    return /^\+?[0-9\s\-]{7,15}$/.test(phone);
-  };
-
-  const handleImagePreview = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = () => setPreviewImage(reader.result as string);
-    reader.readAsDataURL(file);
-  };
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files?.[0]) return;
-    const file = e.target.files[0];
-    handleImagePreview(file);
-    try {
-      setUploading(true);
-      const imageUrl = await userService.uploadProfileImage(file);
-      setForm((prev) => (prev ? { ...prev, profileImageUrl: imageUrl } : prev));
-    } catch {
-      setError("Failed to upload image.");
-    } finally {
-      setUploading(false);
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form) return;
 
-    if (!validatePhone(form.phoneNumber)) {
+    if (!isPhoneValid(form.phoneNumber)) {
       setError("Invalid phone number format.");
       return;
     }
 
-    if (newPassword && newPassword !== confirmPassword) {
+    if (newPassword && !isPasswordConfirmed(newPassword, confirmPassword)) {
       setError("Passwords do not match.");
       return;
     }
 
     try {
       setSaving(true);
-      await userService.updateProfile({
-        ...form,
-        newPassword: newPassword.trim() ? newPassword : undefined,
-      });
+      const formData = new FormData();
+      formData.append("firstName", form.firstName);
+      formData.append("lastName", form.lastName);
+      formData.append("username", form.username);
+      formData.append("address", form.address);
+      formData.append("phoneNumber", form.phoneNumber);
+      formData.append("email", form.email);
+      if (newPassword.trim()) {
+        formData.append("newPassword", newPassword);
+      }
+      if (selectedFile) {
+        formData.append("profileImage", selectedFile);
+      }
+
+      await userService.updateProfileFormData(formData);
       navigate("/profile");
     } catch {
       setError("Failed to update profile.");
@@ -93,6 +92,25 @@ const EditProfile: React.FC = () => {
   };
 
   if (!form) return <p className="p-6 text-center">Loading form...</p>;
+
+  const fields: FormField[] = [
+    ...baseUserFields(form, handleChange, { disableEmail: true }),
+    {
+      name: "newPassword",
+      type: "password",
+      label: "New Password (optional)",
+      value: newPassword,
+      onChange: (e) => setNewPassword(e.target.value),
+    },
+    {
+      name: "confirmPassword",
+      type: "password",
+      label: "Confirm New Password",
+      value: confirmPassword,
+      onChange: (e) => setConfirmPassword(e.target.value),
+      showError: !!newPassword && newPassword !== confirmPassword,
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-backgroundLight to-background dark:from-background dark:to-backgroundLight flex items-center justify-center px-4 transition-colors duration-300">
@@ -128,98 +146,18 @@ const EditProfile: React.FC = () => {
 
         <FormError message={error} />
 
-        <div className="flex flex-col items-center gap-2">
-          <img
-            src={
-              previewImage ||
-              `http://localhost:5209${
-                form.profileImageUrl ?? "/Images/profile/default.jpg"
-              }`
-            }
-            alt="Profile"
-            className="w-28 h-28 rounded-full object-cover border"
-          />
-          <label className="text-sm font-medium mt-2">
-            <span className="block text-center mb-1">Change Profile Image</span>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageUpload}
-              className="block w-full text-sm text-gray-500
-                         file:mr-4 file:py-2 file:px-4
-                         file:rounded-lg file:border-0
-                         file:text-sm file:font-semibold
-                         file:bg-primary file:text-white
-                         hover:file:bg-secondary
-                         transition-colors duration-300 cursor-pointer"
-            />
-          </label>
-          {uploading && (
-            <p className="text-sm text-gray-500 mt-1">Uploading...</p>
-          )}
-        </div>
-
-        <TextInput
-          name="firstName"
-          label="First Name"
-          value={form.firstName}
-          onChange={handleChange}
-          required
+        <ProfileImageUpload
+          previewUrl={
+            previewImage ||
+            `http://localhost:5209${
+              form.profileImageUrl ?? "/Images/profile/default.jpg"
+            }`
+          }
+          onFileChange={handleFileInput}
+          label="Change Profile Image"
         />
 
-        <TextInput
-          name="lastName"
-          label="Last Name"
-          value={form.lastName}
-          onChange={handleChange}
-          required
-        />
-
-        <TextInput
-          name="username"
-          label="Username"
-          value={form.username}
-          onChange={handleChange}
-          required
-        />
-
-        <TextInput
-          name="phoneNumber"
-          label="Phone Number"
-          value={form.phoneNumber}
-          onChange={handleChange}
-          placeholder="+381 64 1234567"
-          required
-        />
-
-        <TextInput
-          name="address"
-          label="Address"
-          value={form.address}
-          onChange={handleChange}
-          required
-        />
-
-        <TextInput
-          name="email"
-          label="Email"
-          value={form.email}
-          onChange={() => {}}
-        />
-
-        <PasswordInput
-          name="newPassword"
-          label="New Password (optional)"
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-        />
-
-        <PasswordInput
-          name="confirmPassword"
-          label="Confirm New Password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-        />
+        <FormFields fields={fields} />
 
         <div className="pt-4">
           <LoadingButton loading={saving} text="Save Changes" />

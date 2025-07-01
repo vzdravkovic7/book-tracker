@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
-import userService, { type User } from "../services/userService";
 import { useNavigate } from "react-router-dom";
+import ConfirmDialog from "../components/common/ConfirmDialog";
+import userService from "../services/userService";
+import type { User } from "../types";
 
 const Profile: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
+  const [showConfirm, setShowConfirm] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -12,6 +15,16 @@ const Profile: React.FC = () => {
       .then((data) => setUser(data))
       .catch(() => navigate("/login"));
   }, [navigate]);
+
+  const handleDeactivate = async () => {
+    try {
+      await userService.deactivateProfile();
+      localStorage.removeItem("token");
+      navigate("/login");
+    } catch (err) {
+      console.error("Failed to deactivate profile:", err);
+    }
+  };
 
   if (!user) {
     return (
@@ -63,27 +76,29 @@ const Profile: React.FC = () => {
         <div className="flex gap-4 justify-center pt-4">
           <button
             onClick={() => navigate("/edit-profile")}
-            className="text-sm bg-primary hover:bg-secondary text-white px-4 py-2 rounded-lg transition-colors duration-300"
+            className="text-sm px-4 py-2 rounded-lg transition-colors duration-300 
+              bg-primary text-white hover:bg-secondary 
+              dark:bg-blue-400 dark:hover:bg-blue-600 dark:text-gray-900"
           >
             Edit Profile
           </button>
           <button
-            onClick={async () => {
-              const confirm = window.confirm(
-                "Are you sure you want to deactivate your profile?"
-              );
-              if (confirm) {
-                await userService.deactivateProfile();
-                localStorage.removeItem("token");
-                navigate("/login");
-              }
-            }}
-            className="text-sm bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors duration-300"
+            onClick={() => setShowConfirm(true)}
+            className="text-sm px-4 py-2 rounded-lg transition-colors duration-300 
+              bg-red-500 hover:bg-red-600 text-white 
+              dark:bg-red-400 dark:hover:bg-red-600 dark:text-gray-900"
           >
             Deactivate
           </button>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={showConfirm}
+        onCancel={() => setShowConfirm(false)}
+        onConfirm={handleDeactivate}
+        message="Are you sure you want to deactivate your profile?"
+      />
     </div>
   );
 };

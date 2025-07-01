@@ -19,8 +19,11 @@ builder.Configuration
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Register TokenService
+// Register Services
 builder.Services.AddScoped<TokenService>();
+builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<ImageService>();
+builder.Services.AddScoped<PasswordService>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options => {

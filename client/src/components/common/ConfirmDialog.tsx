@@ -22,13 +22,17 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         <div className="flex justify-end gap-3 pt-2">
           <button
             onClick={onCancel}
-            className="px-4 py-2 text-sm rounded-lg bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-textDark dark:text-white transition-colors duration-300"
+            className="px-4 py-2 text-sm rounded-lg transition-colors duration-300 
+            bg-gray-200 hover:bg-gray-300 text-textDark 
+            dark:bg-gray-600 dark:hover:bg-gray-500 dark:text-white"
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
-            className="px-4 py-2 text-sm rounded-lg bg-red-500 hover:bg-red-600 text-white transition-colors duration-300"
+            className="px-4 py-2 text-sm rounded-lg transition-colors duration-300 
+            bg-red-500 hover:bg-red-600 text-white 
+            dark:bg-red-400 dark:hover:bg-red-600 dark:text-gray-900"
           >
             Confirm
           </button>
