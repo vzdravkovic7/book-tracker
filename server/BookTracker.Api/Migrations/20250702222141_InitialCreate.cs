@@ -39,9 +39,13 @@ namespace BookTracker.Api.Migrations
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     title = table.Column<string>(type: "text", nullable: false),
                     author = table.Column<string>(type: "text", nullable: false),
+                    genre = table.Column<string>(type: "text", nullable: false),
                     status = table.Column<string>(type: "text", nullable: false),
                     rating = table.Column<int>(type: "integer", nullable: true),
                     review = table.Column<string>(type: "text", nullable: true),
+                    cover_image_url = table.Column<string>(type: "text", nullable: true),
+                    date_added = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    date_completed = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     user_id = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>

@@ -24,6 +24,7 @@ builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<ImageService>();
 builder.Services.AddScoped<PasswordService>();
+builder.Services.AddScoped<BookService>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options => {
