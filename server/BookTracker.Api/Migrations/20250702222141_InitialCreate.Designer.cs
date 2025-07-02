@@ -11,7 +11,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BookTracker.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250701171244_InitialCreate")]
+    [Migration("20250702222141_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -35,6 +35,23 @@ namespace BookTracker.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("author");
+
+                    b.Property<string>("CoverImageUrl")
+                        .HasColumnType("text")
+                        .HasColumnName("cover_image_url");
+
+                    b.Property<DateTime>("DateAdded")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("date_added");
+
+                    b.Property<DateTime?>("DateCompleted")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("date_completed");
+
+                    b.Property<string>("Genre")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("genre");
 
                     b.Property<int?>("Rating")
                         .HasColumnType("integer")

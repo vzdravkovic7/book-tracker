@@ -1,32 +1,22 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
 public class BooksController : ControllerBase {
-    private readonly AppDbContext _context;
+    private readonly BookService _bookService;
+    private readonly ImageService _imageService;
 
-    public BooksController(AppDbContext context) {
-        _context = context;
-    }
-
-    private Guid GetUserId() {
-        var userIdClaim = User.FindFirst("userId")?.Value;
-        if (string.IsNullOrEmpty(userIdClaim))
-            throw new UnauthorizedAccessException("User ID claim missing in token.");
-
-        return Guid.Parse(userIdClaim);
+    public BooksController(BookService bookService, ImageService imageService) {
+        _bookService = bookService;
+        _imageService = imageService;
     }
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<BookReadDTO>>> GetBooks() {
-        var userId = GetUserId();
-        var books = await _context.Books
-            .Where(b => b.UserId == userId)
-            .ToListAsync();
+        var userId = UserHelper.GetUserId(User);
+        var books = await _bookService.GetAllByUserAsync(userId);
 
         var dtos = books.Select(BookMapper.ToReadDTO);
         return Ok(dtos);
@@ -34,8 +24,8 @@ public class BooksController : ControllerBase {
 
     [HttpGet("{id}")]
     public async Task<ActionResult<BookReadDTO>> GetBookById(Guid id) {
-        var userId = GetUserId();
-        var book = await _context.Books.FirstOrDefaultAsync(b => b.Id == id && b.UserId == userId);
+        var userId = UserHelper.GetUserId(User);
+        var book = await _bookService.GetByIdAsync(id, userId);
 
         if (book == null)
             return NotFound();
@@ -43,42 +33,51 @@ public class BooksController : ControllerBase {
         return Ok(BookMapper.ToReadDTO(book));
     }
 
-
     [HttpPost]
-    public async Task<ActionResult<BookReadDTO>> CreateBook([FromBody] BookCreateDTO dto) {
-        var userId = GetUserId();
-        var book = BookMapper.ToEntity(dto, userId);
+    public async Task<ActionResult<BookReadDTO>> CreateBook([FromForm] BookCreateDTO dto, IFormFile? coverImage) {
+        var userId = UserHelper.GetUserId(User);
 
-        _context.Books.Add(book);
-        await _context.SaveChangesAsync();
+        if (dto.Status != BookStatus.Completed && dto.DateCompleted != null)
+            return BadRequest("DateCompleted can only be set if the book status is 'Completed'.");
+
+        var imageUrl = await _imageService.SaveBookCoverImageAsync(coverImage);
+        var book = BookMapper.ToEntity(dto, userId, imageUrl);
+
+        await _bookService.AddAsync(book);
 
         var result = BookMapper.ToReadDTO(book);
-        return CreatedAtAction(nameof(GetBooks), new { id = book.Id }, result);
+        return CreatedAtAction(nameof(GetBookById), new { id = book.Id }, result);
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateBook(Guid id, BookUpdateDTO dto) {
-        var userId = GetUserId();
-        var book = await _context.Books.FirstOrDefaultAsync(b => b.Id == id && b.UserId == userId);
+    public async Task<IActionResult> UpdateBook(Guid id, [FromForm] BookUpdateDTO dto, IFormFile? coverImage) {
+        var userId = UserHelper.GetUserId(User);
+        var book = await _bookService.GetByIdAsync(id, userId);
 
         if (book == null)
             return NotFound();
 
-        BookMapper.UpdateEntity(book, dto);
-        await _context.SaveChangesAsync();
+        if (dto.Status != BookStatus.Completed && dto.DateCompleted != null)
+            return BadRequest("DateCompleted can only be set if the book status is 'Completed'.");
+
+        var imageUrl = await _imageService.SaveBookCoverImageAsync(coverImage);
+        BookMapper.UpdateEntity(book, dto, imageUrl);
+
+        await _bookService.SaveChangesAsync();
         return NoContent();
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteBook(Guid id) {
-        var userId = GetUserId();
-        var book = await _context.Books.FirstOrDefaultAsync(b => b.Id == id && b.UserId == userId);
+        var userId = UserHelper.GetUserId(User);
+        var book = await _bookService.GetByIdAsync(id, userId);
 
         if (book == null)
             return NotFound();
 
-        _context.Books.Remove(book);
-        await _context.SaveChangesAsync();
+        _bookService.Remove(book);
+        await _bookService.SaveChangesAsync();
+
         return NoContent();
     }
 }
