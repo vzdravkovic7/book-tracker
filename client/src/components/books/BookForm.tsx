@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import axios from "../../services/api";
+import bookService from "../../services/bookService";
 import { getFileFromInputEvent } from "../../utils/imageUtils";
 import { useImagePreview } from "../../hooks/useImagePreview";
 import {
@@ -49,8 +49,7 @@ const BookForm: React.FC = () => {
 
   useEffect(() => {
     if (id) {
-      axios.get(`/books/${id}`).then((res) => {
-        const book = res.data;
+      bookService.getById(id).then((book) => {
         const dateCompletedISO = book.dateCompleted;
         book.dateCompleted = dateCompletedISO
           ? dateCompletedISO.split("T")[0]
@@ -121,11 +120,12 @@ const BookForm: React.FC = () => {
       }
 
       if (id) {
-        await axios.put(`/books/${id}`, formData);
+        await bookService.update(id, formData);
+        navigate(`/book/${id}`);
       } else {
-        await axios.post("/books", formData);
+        await bookService.create(formData);
+        navigate("/dashboard");
       }
-      navigate("/dashboard");
     } catch {
       setError("Failed to save book.");
     } finally {
@@ -148,7 +148,9 @@ const BookForm: React.FC = () => {
       >
         <button
           type="button"
-          onClick={() => navigate("/dashboard")}
+          onClick={() =>
+            id ? navigate(`/book/${id}`) : navigate("/dashboard")
+          }
           className="absolute top-4 right-4 text-gray-400 hover:text-textDark dark:hover:text-white transition"
           aria-label="Close"
         >

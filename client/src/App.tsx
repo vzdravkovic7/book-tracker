@@ -9,6 +9,7 @@ import Layout from "./components/layout/Layout";
 import ProtectedRoute from "./components/routes/ProtectedRoute";
 import Profile from "./pages/Profile";
 import EditProfile from "./pages/EditProfile";
+import BookDetails from "./pages/BookDetails";
 
 const App: React.FC = () => {
   const token = localStorage.getItem("token");
@@ -83,6 +84,16 @@ const App: React.FC = () => {
           <ProtectedRoute>
             <Layout>
               <EditProfile />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/book/:id"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <BookDetails />
             </Layout>
           </ProtectedRoute>
         }
