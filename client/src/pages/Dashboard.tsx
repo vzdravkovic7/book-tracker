@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import BookCard from "../components/books/BookCard";
-import axios from "../services/api";
+import bookService from "../services/bookService";
 import type { Book } from "../types";
 import { jwtDecode } from "jwt-decode";
 
@@ -13,22 +13,17 @@ const Dashboard: React.FC = () => {
   const [username, setUsername] = useState("");
 
   useEffect(() => {
-    // Extract Username from token
     const token = localStorage.getItem("token");
     if (token) {
       const decoded = jwtDecode<TokenPayload>(token);
       setUsername(decoded.username);
     }
 
-    axios
-      .get("/books")
-      .then((res) => setBooks(res.data))
+    bookService
+      .getAll()
+      .then(setBooks)
       .catch((err) => console.error(err));
   }, []);
-
-  const handleDelete = (id: string) => {
-    setBooks((prev) => prev.filter((book) => book.id !== id));
-  };
 
   return (
     <div className="min-h-screen bg-white dark:bg-background text-textDark dark:text-textLight px-4 py-8 transition-colors duration-300">
@@ -44,7 +39,7 @@ const Dashboard: React.FC = () => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {books.map((book) => (
-              <BookCard key={book.id} book={book} onDelete={handleDelete} />
+              <BookCard key={book.id} book={book} />
             ))}
           </div>
         )}
