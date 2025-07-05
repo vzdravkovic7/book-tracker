@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using BookTracker.Api.Helpers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
@@ -14,12 +15,68 @@ public class BooksController : ControllerBase {
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<BookReadDTO>>> GetBooks() {
+    public async Task<ActionResult<PaginatedResult<BookReadDTO>>> GetBooks(
+        [FromQuery] string? searchTerm,
+        [FromQuery] string? review,
+        [FromQuery] string? sortBy,
+        [FromQuery] string? sortDirection,
+        [FromQuery] string? genre,
+        [FromQuery] string? author,
+        [FromQuery] BookStatus? status,
+        [FromQuery] int? rating,
+        [FromQuery] DateTime? dateAddedFrom,
+        [FromQuery] DateTime? dateAddedTo,
+        [FromQuery] DateTime? dateCompletedFrom,
+        [FromQuery] DateTime? dateCompletedTo,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 6) {
         var userId = UserHelper.GetUserId(User);
-        var books = await _bookService.GetAllByUserAsync(userId);
 
-        var dtos = books.Select(BookMapper.ToReadDTO);
-        return Ok(dtos);
+        dateAddedFrom = DateTimeHelper.ToUtcDate(dateAddedFrom, false);
+        dateAddedTo = DateTimeHelper.ToUtcDate(dateAddedTo, true);
+        dateCompletedFrom = DateTimeHelper.ToUtcDate(dateCompletedFrom, false);
+        dateCompletedTo = DateTimeHelper.ToUtcDate(dateCompletedTo, true);
+
+        var result = await _bookService.GetPaginatedBooksAsync(
+            userId,
+            searchTerm,
+            review,
+            sortBy,
+            sortDirection,
+            genre,
+            author,
+            status,
+            rating,
+            dateAddedFrom,
+            dateAddedTo,
+            dateCompletedFrom,
+            dateCompletedTo,
+            page,
+            pageSize
+        );
+
+        var dtoResult = new PaginatedResult<BookReadDTO> {
+            Items = result.Items.Select(BookMapper.ToReadDTO).ToList(),
+            TotalItems = result.TotalItems,
+            CurrentPage = result.CurrentPage,
+            TotalPages = result.TotalPages
+        };
+
+        return Ok(dtoResult);
+    }
+
+    [HttpGet("genres")]
+    public async Task<ActionResult<List<string>>> GetGenres() {
+        var userId = UserHelper.GetUserId(User);
+        var genres = await _bookService.GetDistinctGenresAsync(userId);
+        return Ok(genres);
+    }
+
+    [HttpGet("authors")]
+    public async Task<ActionResult<List<string>>> GetAuthors() {
+        var userId = UserHelper.GetUserId(User);
+        var authors = await _bookService.GetDistinctAuthorsAsync(userId);
+        return Ok(authors);
     }
 
     [HttpGet("{id}")]
