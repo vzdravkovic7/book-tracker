@@ -24,3 +24,10 @@ export interface BookDetailsDTO {
   dateCompleted?: string;
   coverImageUrl?: string;
 }
+
+export interface PaginatedResponse<T> {
+  items: T[];
+  totalItems: number;
+  currentPage: number;
+  totalPages: number;
+}
