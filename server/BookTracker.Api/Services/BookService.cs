@@ -31,6 +31,12 @@ public class BookService {
         _context.Books.Remove(book);
     }
 
+    public async Task<List<Book>> GetFavouriteBooksAsync(Guid userId) {
+        return await _context.Books
+            .Where(b => b.UserId == userId && b.IsFavourite)
+            .ToListAsync();
+    }
+
     public async Task<PaginatedResult<Book>> GetPaginatedBooksAsync(
     Guid userId,
     string? searchTerm,

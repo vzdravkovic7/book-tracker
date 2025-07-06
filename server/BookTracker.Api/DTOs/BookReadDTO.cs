@@ -18,4 +18,6 @@
     public DateTime DateAdded { get; set; }
 
     public DateTime? DateCompleted { get; set; }
+
+    public bool IsFavourite { get; set; }
 }

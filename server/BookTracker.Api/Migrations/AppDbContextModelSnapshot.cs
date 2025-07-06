@@ -50,6 +50,10 @@ namespace BookTracker.Api.Migrations
                         .HasColumnType("text")
                         .HasColumnName("genre");
 
+                    b.Property<bool>("IsFavourite")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_favourite");
+
                     b.Property<int?>("Rating")
                         .HasColumnType("integer")
                         .HasColumnName("rating");

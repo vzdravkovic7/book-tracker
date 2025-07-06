@@ -10,7 +10,8 @@
             Review = book.Review,
             CoverImageUrl = book.CoverImageUrl,
             DateAdded = book.DateAdded,
-            DateCompleted = book.DateCompleted
+            DateCompleted = book.DateCompleted,
+            IsFavourite = book.IsFavourite
         };
     }
 

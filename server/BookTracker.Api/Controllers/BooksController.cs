@@ -137,4 +137,27 @@ public class BooksController : ControllerBase {
 
         return NoContent();
     }
+
+    [HttpPut("{id}/favorite")]
+    public async Task<IActionResult> ToggleFavorite(Guid id, [FromQuery] bool isFavourite) {
+        var userId = UserHelper.GetUserId(User);
+        var book = await _bookService.GetByIdAsync(id, userId);
+
+        if (book == null)
+            return NotFound();
+
+        book.IsFavourite = isFavourite;
+        await _bookService.SaveChangesAsync();
+
+        return NoContent();
+    }
+
+    [HttpGet("favourites")]
+    public async Task<ActionResult<List<BookReadDTO>>> GetFavouriteBooks() {
+        var userId = UserHelper.GetUserId(User);
+        var books = await _bookService.GetFavouriteBooksAsync(userId);
+
+        var dtoList = books.Select(BookMapper.ToReadDTO).ToList();
+        return Ok(dtoList);
+    }
 }
