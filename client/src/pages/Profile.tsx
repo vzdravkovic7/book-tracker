@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import ConfirmDialog from "../components/common/ConfirmDialog";
 import userService from "../services/userService";
 import type { User } from "../types";
+import FavoriteBooksCarousel from "../components/books/FavoriteBooksCarousel";
 
 const Profile: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -72,6 +73,8 @@ const Profile: React.FC = () => {
             {new Date(user.registrationDate).toLocaleDateString()}
           </div>
         </div>
+
+        <FavoriteBooksCarousel />
 
         <div className="flex gap-4 justify-center pt-4">
           <button

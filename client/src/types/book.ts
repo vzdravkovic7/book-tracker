@@ -22,6 +22,7 @@ export interface BookDetailsDTO {
   review?: string;
   dateAdded: string;
   dateCompleted?: string;
+  isFavourite: boolean;
   coverImageUrl?: string;
 }
 

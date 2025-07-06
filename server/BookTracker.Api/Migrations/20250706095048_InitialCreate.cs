@@ -46,6 +46,7 @@ namespace BookTracker.Api.Migrations
                     cover_image_url = table.Column<string>(type: "text", nullable: true),
                     date_added = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     date_completed = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    is_favourite = table.Column<bool>(type: "boolean", nullable: false),
                     user_id = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>

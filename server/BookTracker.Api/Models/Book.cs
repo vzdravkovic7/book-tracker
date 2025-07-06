@@ -26,6 +26,8 @@ public class Book {
 
     public DateTime? DateCompleted { get; set; }
 
+    public bool IsFavourite { get; set; } = false;
+
     public Guid UserId { get; set; }
     public User User { get; set; } = null!;
 }

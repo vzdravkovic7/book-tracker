@@ -67,6 +67,15 @@ const remove = async (id: string): Promise<void> => {
   await axios.delete(`/books/${id}`);
 };
 
+const toggleFavorite = async (id: string, isFavourite: boolean): Promise<void> => {
+  await axios.put(`/books/${id}/favorite?isFavourite=${isFavourite}`);
+};
+
+const getFavourites = async (): Promise<Book[]> => {
+  const res = await axios.get("/books/favourites");
+  return res.data;
+};
+
 export default {
   getBooks,
   getGenres,
@@ -76,4 +85,6 @@ export default {
   create,
   update,
   remove,
+  toggleFavorite,
+  getFavourites,
 };
