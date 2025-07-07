@@ -46,6 +46,14 @@ const NavbarMenuItems: React.FC<Props> = ({
           >
             Profile
           </Link>
+          <Link
+            to="/graphs"
+            className="text-sm px-4 py-2 rounded-2xl hover:rounded-lg transition-all duration-300 
+              bg-primary text-white hover:bg-secondary 
+              dark:bg-blue-400 dark:hover:bg-blue-600 dark:text-gray-900"
+          >
+            Graphs & Charts
+          </Link>
           <button
             onClick={onLogout}
             className="text-sm px-4 py-2 rounded-2xl hover:rounded-lg transition-all duration-300 
