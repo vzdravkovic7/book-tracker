@@ -160,4 +160,13 @@ public class BooksController : ControllerBase {
         var dtoList = books.Select(BookMapper.ToReadDTO).ToList();
         return Ok(dtoList);
     }
+
+    [HttpGet("all")]
+    public async Task<ActionResult<List<BookReadDTO>>> GetAllUserBooks() {
+        var userId = UserHelper.GetUserId(User);
+        var books = await _bookService.GetAllByUserAsync(userId);
+
+        var dtoList = books.Select(BookMapper.ToReadDTO).ToList();
+        return Ok(dtoList);
+    }
 }

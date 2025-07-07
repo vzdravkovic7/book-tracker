@@ -39,8 +39,8 @@ const getAuthors = async () => {
   return response.data;
 };
 
-const getAll = async (): Promise<Book[]> => {
-  const res = await axios.get("/books");
+const getAllForUser = async (): Promise<BookDetailsDTO[]> => {
+  const res = await axios.get("/books/all");
   return res.data;
 };
 
@@ -80,7 +80,7 @@ export default {
   getBooks,
   getGenres,
   getAuthors,
-  getAll,
+  getAllForUser,
   getById,
   create,
   update,

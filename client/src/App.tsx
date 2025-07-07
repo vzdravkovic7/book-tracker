@@ -10,6 +10,7 @@ import ProtectedRoute from "./components/routes/ProtectedRoute";
 import Profile from "./pages/Profile";
 import EditProfile from "./pages/EditProfile";
 import BookDetails from "./pages/BookDetails";
+import Graphs from "./pages/Graphs";
 
 const App: React.FC = () => {
   const token = localStorage.getItem("token");
@@ -94,6 +95,16 @@ const App: React.FC = () => {
           <ProtectedRoute>
             <Layout>
               <BookDetails />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/graphs"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <Graphs />
             </Layout>
           </ProtectedRoute>
         }
