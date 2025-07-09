@@ -25,10 +25,19 @@ builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<ImageService>();
 builder.Services.AddScoped<PasswordService>();
 builder.Services.AddScoped<BookService>();
+builder.Services.AddScoped<IWebSocketNotifier, SignalRNotifier>();
+builder.Services.AddScoped<SuggestionService>();
+builder.Services.AddSignalR();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options => {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
+
+builder.Services
+    .AddSignalR()
+    .AddJsonProtocol(options => {
+        options.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 
 // Configure CORS
@@ -37,7 +46,8 @@ builder.Services.AddCors(options => {
     options.AddPolicy(name: corsPolicyName, policy => {
         policy.WithOrigins("http://localhost:5173")
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
 
@@ -97,5 +107,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<SuggestionHub>("/hubs/suggestions");
 
 app.Run();

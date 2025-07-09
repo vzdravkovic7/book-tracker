@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import ThemeToggle from "./ThemeToggle";
+import { useSuggestions } from "../../contexts/SuggestionsContext";
 
 interface Props {
   isDark: boolean;
@@ -15,6 +16,8 @@ const NavbarMenuItems: React.FC<Props> = ({
   onToggleTheme,
   onLogout,
 }) => {
+  const { pendingCount } = useSuggestions();
+
   return (
     <>
       <ThemeToggle isDark={isDark} toggleTheme={onToggleTheme} />
@@ -54,6 +57,21 @@ const NavbarMenuItems: React.FC<Props> = ({
           >
             Graphs & Charts
           </Link>
+
+          <Link
+            to="/suggestions"
+            className="relative inline-flex items-center text-sm px-4 py-2 rounded-2xl hover:rounded-lg transition-all duration-300 
+              bg-primary text-white hover:bg-secondary 
+              dark:bg-blue-400 dark:hover:bg-blue-600 dark:text-gray-900"
+          >
+            Suggestions
+            {pendingCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                {pendingCount}
+              </span>
+            )}
+          </Link>
+
           <button
             onClick={onLogout}
             className="text-sm px-4 py-2 rounded-2xl hover:rounded-lg transition-all duration-300 

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { disconnectSuggestionSocket } from "../services/suggestionSocket";
 
 export const useNavbarState = () => {
   const [isDark, setIsDark] = useState(
@@ -52,6 +53,8 @@ export const useNavbarState = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("email");
+    disconnectSuggestionSocket();
     setIsLoggedIn(false);
     navigate("/login");
   };

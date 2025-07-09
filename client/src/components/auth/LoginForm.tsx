@@ -6,11 +6,16 @@ import TextInput from "../common/TextInput";
 import PasswordInput from "../common/PasswordInput";
 import FormError from "../common/FormError";
 import LoadingButton from "../common/LoadingButton";
+import { connectSuggestionSocket } from "../../services/suggestionSocket";
+import type { Suggestion } from "../../types/suggestion";
+import { useSuggestions } from "../../contexts/SuggestionsContext";
+import suggestionService from "../../services/suggestionService";
 
 const LoginForm: React.FC = () => {
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const { setSuggestions, addSuggestion } = useSuggestions();
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -23,6 +28,16 @@ const LoginForm: React.FC = () => {
     try {
       setLoading(true);
       await authService.login(form);
+      localStorage.setItem("email", form.email);
+
+      const initialSuggestions = await suggestionService.getAllSuggestions();
+      setSuggestions(initialSuggestions);
+
+      connectSuggestionSocket(form.email, (suggestion: Suggestion) => {
+        console.log("New suggestion received!", suggestion);
+        addSuggestion(suggestion);
+      });
+
       navigate("/dashboard");
     } catch (err: any) {
       if (err.response?.status === 401) {

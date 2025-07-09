@@ -12,6 +12,25 @@ namespace BookTracker.Api.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "suggestions",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    book_title = table.Column<string>(type: "text", nullable: false),
+                    author = table.Column<string>(type: "text", nullable: false),
+                    genre = table.Column<string>(type: "text", nullable: false),
+                    cover_image_url = table.Column<string>(type: "text", nullable: true),
+                    from_user_email = table.Column<string>(type: "text", nullable: false),
+                    to_user_email = table.Column<string>(type: "text", nullable: false),
+                    status = table.Column<string>(type: "text", nullable: false),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("p_k_suggestions", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "users",
                 columns: table => new
                 {
@@ -71,6 +90,9 @@ namespace BookTracker.Api.Migrations
         {
             migrationBuilder.DropTable(
                 name: "books");
+
+            migrationBuilder.DropTable(
+                name: "suggestions");
 
             migrationBuilder.DropTable(
                 name: "users");

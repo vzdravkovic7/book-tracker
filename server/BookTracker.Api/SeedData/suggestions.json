@@ -1,0 +1,35 @@
+[
+  {
+    "id": "aaaa1111-aaaa-1111-aaaa-111111111111",
+    "bookTitle": "The Silent Patient",
+    "author": "Alex Michaelides",
+    "genre": "Thriller",
+    "coverImageUrl": "/Images/books/silent-patient.jpg",
+    "fromUserEmail": "alice@example.com",
+    "toUserEmail": "bob@example.com",
+    "status": "Pending",
+    "createdAt": "2025-07-01T10:30:00Z"
+  },
+  {
+    "id": "bbbb2222-bbbb-2222-bbbb-222222222222",
+    "bookTitle": "Sapiens",
+    "author": "Yuval Noah Harari",
+    "genre": "Non-fiction",
+    "coverImageUrl": "/Images/books/sapiens.jpg",
+    "fromUserEmail": "carol@example.com",
+    "toUserEmail": "dave@example.com",
+    "status": "Pending",
+    "createdAt": "2025-07-02T14:45:00Z"
+  },
+  {
+    "id": "cccc3333-cccc-3333-cccc-333333333333",
+    "bookTitle": "Educated",
+    "author": "Tara Westover",
+    "genre": "Memoir",
+    "coverImageUrl": "/Images/books/educated.jpg",
+    "fromUserEmail": "eve@example.com",
+    "toUserEmail": "alice@example.com",
+    "status": "Pending",
+    "createdAt": "2025-07-03T09:15:00Z"
+  }
+]

@@ -85,6 +85,57 @@ namespace BookTracker.Api.Migrations
                     b.ToTable("books");
                 });
 
+            modelBuilder.Entity("Suggestion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Author")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("author");
+
+                    b.Property<string>("BookTitle")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("book_title");
+
+                    b.Property<string>("CoverImageUrl")
+                        .HasColumnType("text")
+                        .HasColumnName("cover_image_url");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("FromUserEmail")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("from_user_email");
+
+                    b.Property<string>("Genre")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("genre");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<string>("ToUserEmail")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("to_user_email");
+
+                    b.HasKey("Id")
+                        .HasName("p_k_suggestions");
+
+                    b.ToTable("suggestions");
+                });
+
             modelBuilder.Entity("User", b =>
                 {
                     b.Property<Guid>("Id")

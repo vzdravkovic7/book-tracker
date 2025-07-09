@@ -1,49 +1,23 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import bookService from "../services/bookService";
-import type { BookDetailsDTO } from "../types";
+import React from "react";
+import { useBookDetails } from "../hooks/useBookDetails";
 import ConfirmDialog from "../components/common/ConfirmDialog";
+import EmailInputDialog from "../components/common/EmailInputDialog";
 import FavoriteButton from "../components/books/FavoriteButton";
 import RatingStars from "../components/books/RatingStars";
 
 const BookDetails: React.FC = () => {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const [book, setBook] = useState<BookDetailsDTO | null>(null);
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [togglingFavorite, setTogglingFavorite] = useState(false);
-
-  useEffect(() => {
-    if (id) {
-      bookService
-        .getById(id)
-        .then(setBook)
-        .catch(() => navigate("/dashboard"));
-    }
-  }, [id, navigate]);
-
-  const handleDelete = async () => {
-    if (!id) return;
-    try {
-      await bookService.remove(id);
-      navigate("/dashboard");
-    } catch (err) {
-      console.error("Failed to delete book:", err);
-    }
-  };
-
-  const handleToggleFavorite = async () => {
-    if (!book) return;
-    setTogglingFavorite(true);
-    try {
-      await bookService.toggleFavorite(book.id, !book.isFavourite);
-      setBook({ ...book, isFavourite: !book.isFavourite });
-    } catch (err) {
-      console.error("Failed to toggle favorite:", err);
-    } finally {
-      setTogglingFavorite(false);
-    }
-  };
+  const {
+    book,
+    togglingFavorite,
+    showConfirm,
+    showEmailDialog,
+    setShowConfirm,
+    setShowEmailDialog,
+    handleToggleFavorite,
+    handleDelete,
+    handleSendSuggestion,
+    navigate,
+  } = useBookDetails();
 
   if (!book) {
     return (
@@ -115,19 +89,21 @@ const BookDetails: React.FC = () => {
           <div className="flex gap-4 justify-center pt-4">
             <button
               onClick={() => navigate(`/edit/${book.id}`)}
-              className="text-sm px-4 py-2 rounded-lg transition-colors duration-300 
-                bg-primary text-white hover:bg-secondary 
-                dark:bg-blue-400 dark:hover:bg-blue-600 dark:text-gray-900"
+              className="text-sm px-4 py-2 rounded-lg transition-colors duration-300 bg-primary text-white hover:bg-secondary dark:bg-blue-400 dark:hover:bg-blue-600 dark:text-gray-900"
             >
               Edit Book
             </button>
             <button
               onClick={() => setShowConfirm(true)}
-              className="text-sm px-4 py-2 rounded-lg transition-colors duration-300 
-                bg-red-500 hover:bg-red-600 text-white 
-                dark:bg-red-400 dark:hover:bg-red-600 dark:text-gray-900"
+              className="text-sm px-4 py-2 rounded-lg transition-colors duration-300 bg-red-500 hover:bg-red-600 text-white dark:bg-red-400 dark:hover:bg-red-600 dark:text-gray-900"
             >
               Delete Book
+            </button>
+            <button
+              onClick={() => setShowEmailDialog(true)}
+              className="text-sm px-4 py-2 rounded-lg transition-colors duration-300 bg-green-600 hover:bg-green-700 text-white dark:bg-green-400 dark:hover:bg-green-600 dark:text-gray-900"
+            >
+              Suggest This Book to a Friend
             </button>
           </div>
         </div>
@@ -138,6 +114,12 @@ const BookDetails: React.FC = () => {
         onCancel={() => setShowConfirm(false)}
         onConfirm={handleDelete}
         message={`Are you sure you want to delete "${book.title}"?`}
+      />
+
+      <EmailInputDialog
+        open={showEmailDialog}
+        onCancel={() => setShowEmailDialog(false)}
+        onConfirm={handleSendSuggestion}
       />
     </div>
   );
