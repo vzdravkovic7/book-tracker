@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
+using Microsoft.EntityFrameworkCore;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -9,16 +9,22 @@ public class SuggestionsController : ControllerBase {
     private readonly SuggestionService _suggestionService;
     private readonly BookService _bookService;
     private readonly UserService _userService;
+    private readonly PasswordService _passwordService;
+    private readonly EmailService _emailService;
     private readonly IWebSocketNotifier _notifier;
 
     public SuggestionsController(
         SuggestionService suggestionService,
         BookService bookService,
         UserService userService,
+        PasswordService passwordService,
+        EmailService emailService,
         IWebSocketNotifier notifier) {
         _suggestionService = suggestionService;
         _bookService = bookService;
         _userService = userService;
+        _passwordService = passwordService;
+        _emailService = emailService;
         _notifier = notifier;
     }
 
@@ -35,13 +41,52 @@ public class SuggestionsController : ControllerBase {
 
         var recipient = await _userService.GetByEmailAsync(dto.ToUserEmail);
         if (recipient != null) {
-            // Existing user: send via WebSocket
             await _notifier.NotifySuggestionAsync(dto.ToUserEmail, SuggestionMapper.ToReadDTO(suggestion));
         } else {
-            // TODO: Handle invitation via email + temp user creation
+            var password = PasswordGenerator.Generate(10);
+            suggestion.TempPasswordHash = _passwordService.Hash(password);
+            await _suggestionService.SaveChangesAsync();
+
+            await _emailService.SendSuggestionInvitationEmailAsync(
+                dto.ToUserEmail, password, fromUser, book, suggestion.Id);
         }
 
         return Ok(SuggestionMapper.ToReadDTO(suggestion));
+    }
+
+    [HttpPost("{id}/accept-anonymous")]
+    [AllowAnonymous]
+    public async Task<IActionResult> AcceptAndRegister(Guid id) {
+        var suggestion = await _suggestionService.GetByIdAsync(id);
+        if (suggestion == null || suggestion.Status != SuggestionStatus.Pending || string.IsNullOrEmpty(suggestion.TempPasswordHash))
+            return NotFound("Invalid or expired suggestion.");
+
+        var existingUser = await _userService.GetByEmailAsync(suggestion.ToUserEmail);
+        if (existingUser != null)
+            return BadRequest("User already exists. Please log in instead.");
+
+        var newUser = new User {
+            Email = suggestion.ToUserEmail,
+            Username = "New User",
+            PasswordHash = suggestion.TempPasswordHash,
+            FirstName = "Friend",
+            LastName = "Invited",
+            Address = "N/A",
+            PhoneNumber = "000-000",
+            ProfileImageUrl = null
+        };
+
+        try {
+            await _userService.AddAsync(newUser);
+        } catch (DbUpdateException ex) when (ex.InnerException?.Message.Contains("duplicate") == true) {
+            return Conflict("A user with this email already exists.");
+        }
+
+        await _suggestionService.AcceptAsync(id, newUser.Email);
+        suggestion.TempPasswordHash = null;
+        await _suggestionService.SaveChangesAsync();
+
+        return Ok(new { message = "Account created and suggestion accepted." });
     }
 
     [HttpGet]
@@ -51,7 +96,6 @@ public class SuggestionsController : ControllerBase {
         if (user == null || user.Email == null) return Unauthorized();
 
         var suggestions = await _suggestionService.GetSuggestionsForUserAsync(user.Email);
-
         return Ok(suggestions.Select(SuggestionMapper.ToReadDTO).ToList());
     }
 
@@ -78,5 +122,4 @@ public class SuggestionsController : ControllerBase {
 
         return NoContent();
     }
-
 }

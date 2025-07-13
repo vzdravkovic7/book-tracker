@@ -11,7 +11,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BookTracker.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250707162909_InitialCreate")]
+    [Migration("20250712100705_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -128,6 +128,10 @@ namespace BookTracker.Api.Migrations
                         .HasColumnType("text")
                         .HasColumnName("status");
 
+                    b.Property<string>("TempPasswordHash")
+                        .HasColumnType("text")
+                        .HasColumnName("temp_password_hash");
+
                     b.Property<string>("ToUserEmail")
                         .IsRequired()
                         .HasColumnType("text")
@@ -195,6 +199,9 @@ namespace BookTracker.Api.Migrations
 
                     b.HasKey("Id")
                         .HasName("p_k_users");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
 
                     b.ToTable("users");
                 });

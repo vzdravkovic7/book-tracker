@@ -12,6 +12,10 @@ public class AppDbContext : DbContext {
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
         modelBuilder.UseSnakeCaseNaming();
 
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.Email)
+            .IsUnique();
+
         modelBuilder
             .Entity<Book>()
             .Property(b => b.Status)

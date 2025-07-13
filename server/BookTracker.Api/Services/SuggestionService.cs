@@ -29,8 +29,18 @@ public class SuggestionService {
         return suggestion;
     }
 
+    public async Task<Suggestion?> GetByIdAsync(Guid id) {
+        return await _context.Suggestions.FirstOrDefaultAsync(s => s.Id == id);
+    }
+
+    public async Task SaveChangesAsync() {
+        await _context.SaveChangesAsync();
+    }
+
     public async Task<bool> AcceptAsync(Guid id, string currentUserEmail) {
-        var suggestion = await _context.Suggestions.FirstOrDefaultAsync(s => s.Id == id && s.ToUserEmail == currentUserEmail);
+        var suggestion = await _context.Suggestions.FirstOrDefaultAsync(s =>
+            s.Id == id && s.ToUserEmail == currentUserEmail);
+
         if (suggestion == null) return false;
 
         suggestion.Status = SuggestionStatus.Accepted;
@@ -39,12 +49,13 @@ public class SuggestionService {
     }
 
     public async Task<bool> DeclineAsync(Guid id, string currentUserEmail) {
-        var suggestion = await _context.Suggestions.FirstOrDefaultAsync(s => s.Id == id && s.ToUserEmail == currentUserEmail);
+        var suggestion = await _context.Suggestions.FirstOrDefaultAsync(s =>
+            s.Id == id && s.ToUserEmail == currentUserEmail);
+
         if (suggestion == null) return false;
 
         _context.Suggestions.Remove(suggestion);
         await _context.SaveChangesAsync();
         return true;
     }
-
 }

@@ -14,6 +14,7 @@ import Graphs from "./pages/Graphs";
 import Suggestions from "./pages/Suggestions";
 
 import { useSuggestionSync } from "./hooks/useSuggestionSync";
+import About from "./pages/About";
 
 interface Props {
   token: string | null;
@@ -24,7 +25,14 @@ const InnerApp: React.FC<Props> = ({ token }) => {
 
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/login" />} />
+      <Route
+        path="/"
+        element={
+          <Layout>
+            <About />
+          </Layout>
+        }
+      />
       <Route
         path="/login"
         element={

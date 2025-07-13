@@ -125,6 +125,10 @@ namespace BookTracker.Api.Migrations
                         .HasColumnType("text")
                         .HasColumnName("status");
 
+                    b.Property<string>("TempPasswordHash")
+                        .HasColumnType("text")
+                        .HasColumnName("temp_password_hash");
+
                     b.Property<string>("ToUserEmail")
                         .IsRequired()
                         .HasColumnType("text")
@@ -192,6 +196,9 @@ namespace BookTracker.Api.Migrations
 
                     b.HasKey("Id")
                         .HasName("p_k_users");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
 
                     b.ToTable("users");
                 });

@@ -19,9 +19,14 @@ const declineSuggestion = async (id: string): Promise<void> => {
   await axios.delete(`/suggestions/${id}/decline`);
 };
 
+const acceptAnonymousSuggestion = async (id: string): Promise<void> => {
+  await axios.post(`/suggestions/${id}/accept-anonymous`);
+};
+
 export default {
   getAllSuggestions,
   suggestBook,
   acceptSuggestion,
   declineSuggestion,
+  acceptAnonymousSuggestion,
 };

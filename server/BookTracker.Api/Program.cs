@@ -27,6 +27,7 @@ builder.Services.AddScoped<PasswordService>();
 builder.Services.AddScoped<BookService>();
 builder.Services.AddScoped<IWebSocketNotifier, SignalRNotifier>();
 builder.Services.AddScoped<SuggestionService>();
+builder.Services.AddScoped<EmailService>();
 builder.Services.AddSignalR();
 
 builder.Services.AddControllers()

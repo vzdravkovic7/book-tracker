@@ -25,6 +25,8 @@ public class Suggestion {
     [Required]
     public string ToUserEmail { get; set; } = null!;
 
+    public string? TempPasswordHash { get; set; }
+
     public SuggestionStatus Status { get; set; } = SuggestionStatus.Pending;
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

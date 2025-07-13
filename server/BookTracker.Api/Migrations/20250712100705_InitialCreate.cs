@@ -22,6 +22,7 @@ namespace BookTracker.Api.Migrations
                     cover_image_url = table.Column<string>(type: "text", nullable: true),
                     from_user_email = table.Column<string>(type: "text", nullable: false),
                     to_user_email = table.Column<string>(type: "text", nullable: false),
+                    temp_password_hash = table.Column<string>(type: "text", nullable: true),
                     status = table.Column<string>(type: "text", nullable: false),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
@@ -83,6 +84,12 @@ namespace BookTracker.Api.Migrations
                 name: "i_x_books_user_id",
                 table: "books",
                 column: "user_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_users_email",
+                table: "users",
+                column: "email",
+                unique: true);
         }
 
         /// <inheritdoc />
