@@ -12,6 +12,7 @@ export const useNavbarState = () => {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const toggleButtonRef = useRef<HTMLButtonElement>(null);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -21,33 +22,26 @@ export const useNavbarState = () => {
   }, [isDark]);
 
   useEffect(() => {
-    const handleStorageChange = () => {
-      setIsLoggedIn(!!localStorage.getItem("token"));
-    };
-    window.addEventListener("storage", handleStorageChange);
-    return () =>
-      window.removeEventListener("storage", handleStorageChange);
-  }, []);
-
-  useEffect(() => {
     setMenuOpen(false);
   }, [location.pathname]);
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+    const handleClickOutside = (event: MouseEvent | PointerEvent) => {
+      const target = event.target as Node;
       if (
         dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
+        !dropdownRef.current.contains(target) &&
+        toggleButtonRef.current &&
+        !toggleButtonRef.current.contains(target)
       ) {
         setMenuOpen(false);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("touchstart", handleClickOutside);
+
+    document.addEventListener("pointerdown", handleClickOutside);
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("touchstart", handleClickOutside);
+      document.removeEventListener("pointerdown", handleClickOutside);
     };
   }, []);
 
@@ -64,6 +58,7 @@ export const useNavbarState = () => {
     isLoggedIn,
     menuOpen,
     dropdownRef,
+    toggleButtonRef,
     toggleTheme: () => setIsDark((prev) => !prev),
     toggleMenu: () => setMenuOpen((prev) => !prev),
     handleLogout,

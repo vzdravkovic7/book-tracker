@@ -1,42 +1,33 @@
-import React, { useEffect, useRef, useState } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
-import suggestionService from "../services/suggestionService";
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import BookIconWatermark from "../components/about/BookIconWatermark";
+import IntroSection from "../components/about/IntroSection";
+import SuggestionStatus from "../components/about/SuggestionStatus";
+import WhoIsItFor from "../components/about/WhoIsItFor";
+import Testimonials from "../components/about/Testimonials";
+import WhyBookTracker from "../components/about/WhyBookTracker";
+import { useAnonymousSuggestionRedirect } from "../hooks/useAnonymousSuggestionRedirect";
 
 const About: React.FC = () => {
-  const [searchParams] = useSearchParams();
-  const [message, setMessage] = useState("Checking invitation...");
+  const { isHandlingInvite, message, loading } =
+    useAnonymousSuggestionRedirect();
   const navigate = useNavigate();
-  const hasRun = useRef(false);
-
-  useEffect(() => {
-    if (hasRun.current) return;
-    hasRun.current = true;
-
-    const suggestionId = searchParams.get("suggestionId");
-    if (suggestionId) {
-      suggestionService
-        .acceptAnonymousSuggestion(suggestionId)
-        .then(() => {
-          setMessage(
-            "Success! Your account has been created and the suggestion was accepted. Redirecting to login..."
-          );
-          setTimeout(() => navigate("/login"), 3500);
-        })
-        .catch((err) => {
-          console.error(err);
-          setMessage("This invitation is invalid, expired, or already used.");
-        });
-    } else {
-      setMessage(
-        "Welcome to Book Tracker! Start your own book collection today."
-      );
-    }
-  }, [searchParams, navigate]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center">
-      <h1 className="text-2xl font-bold mb-4">Book Tracker</h1>
-      <p className="text-lg">{message}</p>
+    <div className="min-h-screen bg-backgroundLight dark:bg-background text-textDark dark:text-textLight transition-colors duration-300 px-4 py-12 flex flex-col items-center">
+      <BookIconWatermark />
+      {!isHandlingInvite ? (
+        <div className="flex flex-col items-center w-full max-w-6xl space-y-20 animate-fade-in">
+          <IntroSection onStart={() => navigate("/register")} />
+          <WhyBookTracker />
+          <WhoIsItFor />
+          <Testimonials />
+        </div>
+      ) : (
+        <div className="animate-fade-in">
+          <SuggestionStatus loading={loading} message={message} />
+        </div>
+      )}
     </div>
   );
 };

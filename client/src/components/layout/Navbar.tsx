@@ -9,6 +9,7 @@ const Navbar: React.FC = () => {
     isLoggedIn,
     menuOpen,
     dropdownRef,
+    toggleButtonRef,
     toggleTheme,
     toggleMenu,
     handleLogout,
@@ -22,14 +23,14 @@ const Navbar: React.FC = () => {
           alt="Logo"
           className="w-8 h-8 sm:w-10 sm:h-10 transition duration-300"
         />
-        <Link to="/dashboard">
+        <Link to={isLoggedIn ? "/dashboard" : "/"}>
           <h1 className="text-xl font-heading text-textDark dark:text-textLight">
             BookTracker
           </h1>
         </Link>
       </div>
 
-      <div className="hidden md:flex gap-4 items-center">
+      <div className="hidden lg:flex gap-4 items-center">
         <NavbarMenuItems
           isDark={isDark}
           isLoggedIn={isLoggedIn}
@@ -39,8 +40,9 @@ const Navbar: React.FC = () => {
       </div>
 
       <button
+        ref={toggleButtonRef}
         onClick={toggleMenu}
-        className="md:hidden text-textDark dark:text-textLight"
+        className="lg:hidden text-textDark dark:text-textLight"
         aria-label="Toggle Menu"
       >
         {menuOpen ? (
@@ -78,7 +80,7 @@ const Navbar: React.FC = () => {
       {menuOpen && (
         <div
           ref={dropdownRef}
-          className="absolute top-20 right-6 w-56 max-h-[calc(100vh-6rem)] overflow-y-auto scrollbar-hide bg-backgroundLight dark:bg-background shadow-lg rounded-lg p-4 flex flex-col gap-3 items-start md:hidden z-50"
+          className="absolute top-20 right-6 w-56 max-h-[calc(100vh-6rem)] overflow-y-auto scrollbar-hide bg-backgroundLight dark:bg-background shadow-lg rounded-lg p-4 flex flex-col gap-3 items-start lg:hidden z-50"
         >
           <NavbarMenuItems
             isDark={isDark}
