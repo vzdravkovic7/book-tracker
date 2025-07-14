@@ -131,7 +131,7 @@ const InnerApp: React.FC<Props> = ({ token }) => {
       />
       <Route
         path="*"
-        element={<Navigate to={token ? "/dashboard" : "/login"} replace />}
+        element={<Navigate to={token ? "/dashboard" : "/"} replace />}
       />
     </Routes>
   );

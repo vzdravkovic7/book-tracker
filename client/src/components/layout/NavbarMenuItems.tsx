@@ -22,17 +22,34 @@ const NavbarMenuItems: React.FC<Props> = ({
     <>
       <ThemeToggle isDark={isDark} toggleTheme={onToggleTheme} />
 
+      <Link
+        to="/"
+        className="text-sm px-4 py-2 rounded-2xl hover:rounded-lg transition-all duration-300 
+              bg-primary text-white hover:bg-secondary 
+              dark:bg-blue-400 dark:hover:bg-blue-600 dark:text-gray-900"
+      >
+        About
+      </Link>
+
       {!isLoggedIn ? (
         <Link
           to="/login"
           className="text-sm px-4 py-2 rounded-2xl hover:rounded-lg transition-all duration-300 
-            bg-primary text-white hover:bg-secondary 
-            dark:bg-blue-400 dark:hover:bg-blue-600 dark:text-gray-900"
+              bg-primary text-white hover:bg-secondary 
+              dark:bg-blue-400 dark:hover:bg-blue-600 dark:text-gray-900"
         >
           Sign In
         </Link>
       ) : (
         <>
+          <Link
+            to="/dashboard"
+            className="text-sm px-4 py-2 rounded-2xl hover:rounded-lg transition-all duration-300 
+              bg-primary text-white hover:bg-secondary 
+              dark:bg-blue-400 dark:hover:bg-blue-600 dark:text-gray-900"
+          >
+            Dashboard
+          </Link>
           <Link
             to="/add"
             className="text-sm px-4 py-2 rounded-2xl hover:rounded-lg transition-all duration-300 
