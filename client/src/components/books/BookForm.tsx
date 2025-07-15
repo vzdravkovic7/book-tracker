@@ -1,12 +1,23 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import axios from "../../services/api";
-import type { Book } from "../../types";
+import bookService from "../../services/bookService";
+import { getFileFromInputEvent } from "../../utils/imageUtils";
+import { useImagePreview } from "../../hooks/useImagePreview";
+import {
+  baseBookFields,
+  dateCompletedField,
+} from "../../config/formFieldConfigs";
+import { validateBookForm } from "../../utils/bookFormValidation";
+import { getStaticBaseUrl } from "../../utils/getApiBaseUrl";
 
-import TextInput from "../common/TextInput";
+import FormError from "../common/FormError";
+import LoadingButton from "../common/LoadingButton";
+import BookCoverUpload from "../common/BookCoverUpload";
+import FormFields from "../common/FormFields";
 import SelectInput from "../common/SelectInput";
 import TextArea from "../common/TextArea";
-import LoadingButton from "../common/LoadingButton";
+
+import type { Book } from "../../types";
 
 const BookForm: React.FC = () => {
   const { id } = useParams();
@@ -15,16 +26,49 @@ const BookForm: React.FC = () => {
   const [form, setForm] = useState<Omit<Book, "id">>({
     title: "",
     author: "",
+    genre: "",
     status: "Reading",
     rating: undefined,
     review: "",
+    dateCompleted: "",
+    coverImageUrl: undefined,
   });
 
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const {
+    preview: previewCover,
+    selectedFile,
+    handleImageChange,
+  } = useImagePreview();
+
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = getFileFromInputEvent(e);
+    handleImageChange(file);
+  };
 
   useEffect(() => {
     if (id) {
-      axios.get(`/books/${id}`).then((res) => setForm(res.data));
+      bookService.getById(id).then((book) => {
+        const dateCompletedISO = book.dateCompleted;
+        book.dateCompleted = dateCompletedISO
+          ? dateCompletedISO.split("T")[0]
+          : "";
+        setForm(book);
+      });
+    } else {
+      setForm({
+        title: "",
+        author: "",
+        genre: "",
+        status: "Reading",
+        rating: undefined,
+        review: "",
+        dateCompleted: "",
+        coverImageUrl: undefined,
+      });
+      handleImageChange(null);
     }
   }, [id]);
 
@@ -42,20 +86,60 @@ const BookForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    const validationError = validateBookForm(form);
+    if (validationError) {
+      setError(validationError);
+      setLoading(false);
+      return;
+    }
+
+    const formattedForm = { ...form };
+
+    if (form.dateCompleted && form.status === "Completed") {
+      const date = new Date(form.dateCompleted + "T12:00:00Z");
+      formattedForm.dateCompleted = date.toISOString();
+    } else {
+      formattedForm.dateCompleted = "";
+    }
+
     try {
-      setLoading(true);
-      if (id) {
-        await axios.put(`/books/${id}`, form);
-      } else {
-        await axios.post("/books", form);
+      const formData = new FormData();
+      Object.entries(formattedForm).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== "") {
+          if (typeof value === "number") {
+            formData.append(key, value.toString());
+          } else {
+            formData.append(key, value);
+          }
+        }
+      });
+      if (selectedFile) {
+        formData.append("coverImage", selectedFile);
       }
-      navigate("/dashboard");
-    } catch (err) {
-      console.error(err);
+
+      if (id) {
+        await bookService.update(id, formData);
+        navigate(`/book/${id}`);
+      } else {
+        await bookService.create(formData);
+        navigate("/dashboard");
+      }
+    } catch {
+      setError("Failed to save book.");
     } finally {
       setLoading(false);
     }
   };
+
+  const fields = [
+    ...baseBookFields(form, handleChange),
+    ...(form.status === "Completed"
+      ? [dateCompletedField(form, handleChange)]
+      : []),
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-backgroundLight to-background dark:from-background dark:to-backgroundLight flex items-center justify-center px-4 transition-colors duration-300">
@@ -65,7 +149,9 @@ const BookForm: React.FC = () => {
       >
         <button
           type="button"
-          onClick={() => navigate("/dashboard")}
+          onClick={() =>
+            id ? navigate(`/book/${id}`) : navigate("/dashboard")
+          }
           className="absolute top-4 right-4 text-gray-400 hover:text-textDark dark:hover:text-white transition"
           aria-label="Close"
         >
@@ -89,23 +175,20 @@ const BookForm: React.FC = () => {
           {id ? "Edit Book" : "Add a New Book"}
         </h2>
 
-        <TextInput
-          name="title"
-          label="Title"
-          value={form.title}
-          onChange={handleChange}
-          placeholder="Book Title"
-          required
+        <FormError message={error} />
+
+        <BookCoverUpload
+          previewUrl={
+            previewCover ||
+            `${getStaticBaseUrl()}${
+              form.coverImageUrl ?? "/Images/books/default.jpg"
+            }`
+          }
+          onFileChange={handleFileInput}
+          label="Upload Book Cover"
         />
 
-        <TextInput
-          name="author"
-          label="Author"
-          value={form.author}
-          onChange={handleChange}
-          placeholder="Author Name"
-          required
-        />
+        <FormFields fields={fields} />
 
         <SelectInput
           name="status"
@@ -117,15 +200,6 @@ const BookForm: React.FC = () => {
             { value: "Completed", label: "Completed" },
             { value: "Wishlist", label: "Wishlist" },
           ]}
-        />
-
-        <TextInput
-          name="rating"
-          label="Rating (1–5)"
-          type="number"
-          value={form.rating || ""}
-          onChange={handleChange}
-          placeholder="Optional"
         />
 
         <TextArea

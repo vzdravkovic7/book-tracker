@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json.Serialization;
+using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,21 +20,40 @@ builder.Configuration
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Register TokenService
+// Register Services
 builder.Services.AddScoped<TokenService>();
+builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<ImageService>();
+builder.Services.AddScoped<PasswordService>();
+builder.Services.AddScoped<BookService>();
+builder.Services.AddScoped<IWebSocketNotifier, SignalRNotifier>();
+builder.Services.AddScoped<SuggestionService>();
+builder.Services.AddScoped<EmailService>();
+builder.Services.AddSignalR();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options => {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 
+builder.Services
+    .AddSignalR()
+    .AddJsonProtocol(options => {
+        options.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
+
 // Configure CORS
 var corsPolicyName = "AllowFrontend";
 builder.Services.AddCors(options => {
     options.AddPolicy(name: corsPolicyName, policy => {
-        policy.WithOrigins("http://localhost:5173")
-              .AllowAnyHeader()
-              .AllowAnyMethod();
+        policy.WithOrigins(
+            "http://localhost:5173",          // local Vite dev
+            "http://localhost:3000",          // local Docker frontend OR npm run preview
+            "http://booktracker_frontend:3000" // Docker container
+        )
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials();
     });
 });
 
@@ -65,12 +86,14 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Auto-migrate + seed
-using (var scope = app.Services.CreateScope()) {
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
-    db.SeedFromJsonFiles();
-}
+app.UseStaticFiles(new StaticFileOptions {
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(Directory.GetCurrentDirectory(), "Images")),
+    RequestPath = "/Images"
+});
+
+// Auto-migrate + seed with retry logic
+app.Services.WaitForDatabaseAndMigrate();
 
 // Swagger for dev
 if (app.Environment.IsDevelopment()) {
@@ -86,5 +109,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<SuggestionHub>("/hubs/suggestions");
 
 app.Run();

@@ -5,14 +5,12 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: "#2563eb", // blue-600
-        secondary: "#1e40af", // blue-800
-
-        background: "#1f2937",        // gray-800 — used for dark mode bg
-        backgroundLight: "#ffffff",   // used for light mode bg
-
-        textLight: "#d1d5db",         // gray-300 — used for dark mode text
-        textDark: "#1f2937",          // darker text for white background
+        primary: "#2563eb",
+        secondary: "#1e40af",
+        background: "#1f2937",
+        backgroundLight: "#ffffff",
+        textLight: "#d1d5db",
+        textDark: "#1f2937",
         textAccept: "#60a5fa",
         textAlert: "#f87171",
       },
@@ -20,7 +18,17 @@ export default {
         heading: ["'Poppins'", "sans-serif"],
         body: ["'Inter'", "sans-serif"],
       },
+      keyframes: {
+        spinOnce: {
+          "0%": { transform: "rotate(0deg)" },
+          "100%": { transform: "rotate(360deg)" },
+        },
+      },
+      animation: {
+        "spin-once": "spinOnce 0.5s linear",
+      },
     },
   },
   plugins: [],
 };
+

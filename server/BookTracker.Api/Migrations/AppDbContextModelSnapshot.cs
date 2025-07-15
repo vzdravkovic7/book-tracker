@@ -33,6 +33,27 @@ namespace BookTracker.Api.Migrations
                         .HasColumnType("text")
                         .HasColumnName("author");
 
+                    b.Property<string>("CoverImageUrl")
+                        .HasColumnType("text")
+                        .HasColumnName("cover_image_url");
+
+                    b.Property<DateTime>("DateAdded")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("date_added");
+
+                    b.Property<DateTime?>("DateCompleted")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("date_completed");
+
+                    b.Property<string>("Genre")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("genre");
+
+                    b.Property<bool>("IsFavourite")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_favourite");
+
                     b.Property<int?>("Rating")
                         .HasColumnType("integer")
                         .HasColumnName("rating");
@@ -64,6 +85,61 @@ namespace BookTracker.Api.Migrations
                     b.ToTable("books");
                 });
 
+            modelBuilder.Entity("Suggestion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Author")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("author");
+
+                    b.Property<string>("BookTitle")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("book_title");
+
+                    b.Property<string>("CoverImageUrl")
+                        .HasColumnType("text")
+                        .HasColumnName("cover_image_url");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("FromUserEmail")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("from_user_email");
+
+                    b.Property<string>("Genre")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("genre");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<string>("TempPasswordHash")
+                        .HasColumnType("text")
+                        .HasColumnName("temp_password_hash");
+
+                    b.Property<string>("ToUserEmail")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("to_user_email");
+
+                    b.HasKey("Id")
+                        .HasName("p_k_suggestions");
+
+                    b.ToTable("suggestions");
+                });
+
             modelBuilder.Entity("User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -71,15 +147,47 @@ namespace BookTracker.Api.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("address");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("email");
 
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("first_name");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("last_name");
+
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("password_hash");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("phone_number");
+
+                    b.Property<string>("ProfileImageUrl")
+                        .HasColumnType("text")
+                        .HasColumnName("profile_image_url");
+
+                    b.Property<DateTime>("RegistrationDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("registration_date");
 
                     b.Property<string>("Username")
                         .IsRequired()
@@ -88,6 +196,9 @@ namespace BookTracker.Api.Migrations
 
                     b.HasKey("Id")
                         .HasName("p_k_users");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
 
                     b.ToTable("users");
                 });

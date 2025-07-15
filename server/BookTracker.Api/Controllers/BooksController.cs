@@ -1,41 +1,88 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using BookTracker.Api.Helpers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
 public class BooksController : ControllerBase {
-    private readonly AppDbContext _context;
+    private readonly BookService _bookService;
+    private readonly ImageService _imageService;
 
-    public BooksController(AppDbContext context) {
-        _context = context;
-    }
-
-    private Guid GetUserId() {
-        var userIdClaim = User.FindFirst("userId")?.Value;
-        if (string.IsNullOrEmpty(userIdClaim))
-            throw new UnauthorizedAccessException("User ID claim missing in token.");
-
-        return Guid.Parse(userIdClaim);
+    public BooksController(BookService bookService, ImageService imageService) {
+        _bookService = bookService;
+        _imageService = imageService;
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<BookReadDTO>>> GetBooks() {
-        var userId = GetUserId();
-        var books = await _context.Books
-            .Where(b => b.UserId == userId)
-            .ToListAsync();
+    public async Task<ActionResult<PaginatedResult<BookReadDTO>>> GetBooks(
+        [FromQuery] string? searchTerm,
+        [FromQuery] string? review,
+        [FromQuery] string? sortBy,
+        [FromQuery] string? sortDirection,
+        [FromQuery] string? genre,
+        [FromQuery] string? author,
+        [FromQuery] BookStatus? status,
+        [FromQuery] int? rating,
+        [FromQuery] DateTime? dateAddedFrom,
+        [FromQuery] DateTime? dateAddedTo,
+        [FromQuery] DateTime? dateCompletedFrom,
+        [FromQuery] DateTime? dateCompletedTo,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 6) {
+        var userId = UserHelper.GetUserId(User);
 
-        var dtos = books.Select(BookMapper.ToReadDTO);
-        return Ok(dtos);
+        dateAddedFrom = DateTimeHelper.ToUtcDate(dateAddedFrom, false);
+        dateAddedTo = DateTimeHelper.ToUtcDate(dateAddedTo, true);
+        dateCompletedFrom = DateTimeHelper.ToUtcDate(dateCompletedFrom, false);
+        dateCompletedTo = DateTimeHelper.ToUtcDate(dateCompletedTo, true);
+
+        var result = await _bookService.GetPaginatedBooksAsync(
+            userId,
+            searchTerm,
+            review,
+            sortBy,
+            sortDirection,
+            genre,
+            author,
+            status,
+            rating,
+            dateAddedFrom,
+            dateAddedTo,
+            dateCompletedFrom,
+            dateCompletedTo,
+            page,
+            pageSize
+        );
+
+        var dtoResult = new PaginatedResult<BookReadDTO> {
+            Items = result.Items.Select(BookMapper.ToReadDTO).ToList(),
+            TotalItems = result.TotalItems,
+            CurrentPage = result.CurrentPage,
+            TotalPages = result.TotalPages
+        };
+
+        return Ok(dtoResult);
+    }
+
+    [HttpGet("genres")]
+    public async Task<ActionResult<List<string>>> GetGenres() {
+        var userId = UserHelper.GetUserId(User);
+        var genres = await _bookService.GetDistinctGenresAsync(userId);
+        return Ok(genres);
+    }
+
+    [HttpGet("authors")]
+    public async Task<ActionResult<List<string>>> GetAuthors() {
+        var userId = UserHelper.GetUserId(User);
+        var authors = await _bookService.GetDistinctAuthorsAsync(userId);
+        return Ok(authors);
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<BookReadDTO>> GetBookById(Guid id) {
-        var userId = GetUserId();
-        var book = await _context.Books.FirstOrDefaultAsync(b => b.Id == id && b.UserId == userId);
+        var userId = UserHelper.GetUserId(User);
+        var book = await _bookService.GetByIdAsync(id, userId);
 
         if (book == null)
             return NotFound();
@@ -43,42 +90,83 @@ public class BooksController : ControllerBase {
         return Ok(BookMapper.ToReadDTO(book));
     }
 
-
     [HttpPost]
-    public async Task<ActionResult<BookReadDTO>> CreateBook([FromBody] BookCreateDTO dto) {
-        var userId = GetUserId();
-        var book = BookMapper.ToEntity(dto, userId);
+    public async Task<ActionResult<BookReadDTO>> CreateBook([FromForm] BookCreateDTO dto, IFormFile? coverImage) {
+        var userId = UserHelper.GetUserId(User);
 
-        _context.Books.Add(book);
-        await _context.SaveChangesAsync();
+        if (dto.Status != BookStatus.Completed && dto.DateCompleted != null)
+            return BadRequest("DateCompleted can only be set if the book status is 'Completed'.");
+
+        var imageUrl = await _imageService.SaveBookCoverImageAsync(coverImage);
+        var book = BookMapper.ToEntity(dto, userId, imageUrl);
+
+        await _bookService.AddAsync(book);
 
         var result = BookMapper.ToReadDTO(book);
-        return CreatedAtAction(nameof(GetBooks), new { id = book.Id }, result);
+        return CreatedAtAction(nameof(GetBookById), new { id = book.Id }, result);
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateBook(Guid id, BookUpdateDTO dto) {
-        var userId = GetUserId();
-        var book = await _context.Books.FirstOrDefaultAsync(b => b.Id == id && b.UserId == userId);
+    public async Task<IActionResult> UpdateBook(Guid id, [FromForm] BookUpdateDTO dto, IFormFile? coverImage) {
+        var userId = UserHelper.GetUserId(User);
+        var book = await _bookService.GetByIdAsync(id, userId);
 
         if (book == null)
             return NotFound();
 
-        BookMapper.UpdateEntity(book, dto);
-        await _context.SaveChangesAsync();
+        if (dto.Status != BookStatus.Completed && dto.DateCompleted != null)
+            return BadRequest("DateCompleted can only be set if the book status is 'Completed'.");
+
+        var imageUrl = await _imageService.SaveBookCoverImageAsync(coverImage);
+        BookMapper.UpdateEntity(book, dto, imageUrl);
+
+        await _bookService.SaveChangesAsync();
         return NoContent();
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteBook(Guid id) {
-        var userId = GetUserId();
-        var book = await _context.Books.FirstOrDefaultAsync(b => b.Id == id && b.UserId == userId);
+        var userId = UserHelper.GetUserId(User);
+        var book = await _bookService.GetByIdAsync(id, userId);
 
         if (book == null)
             return NotFound();
 
-        _context.Books.Remove(book);
-        await _context.SaveChangesAsync();
+        _bookService.Remove(book);
+        await _bookService.SaveChangesAsync();
+
         return NoContent();
+    }
+
+    [HttpPut("{id}/favorite")]
+    public async Task<IActionResult> ToggleFavorite(Guid id, [FromQuery] bool isFavourite) {
+        var userId = UserHelper.GetUserId(User);
+        var book = await _bookService.GetByIdAsync(id, userId);
+
+        if (book == null)
+            return NotFound();
+
+        book.IsFavourite = isFavourite;
+        await _bookService.SaveChangesAsync();
+
+        return NoContent();
+    }
+
+    [HttpGet("favourites")]
+    public async Task<ActionResult<List<BookReadDTO>>> GetFavouriteBooks() {
+        var userId = UserHelper.GetUserId(User);
+        var books = await _bookService.GetFavouriteBooksAsync(userId);
+
+        var dtoList = books.Select(BookMapper.ToReadDTO).ToList();
+        return Ok(dtoList);
+    }
+
+    [HttpGet("all")]
+    public async Task<ActionResult<List<BookReadDTO>>> GetAllUserBooks() {
+        var userId = UserHelper.GetUserId(User);
+        var books = await _bookService.GetAllByUserAsync(userId);
+
+        var dtoList = books.Select(BookMapper.ToReadDTO).ToList();
+        return Ok(dtoList);
     }
 }
