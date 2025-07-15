@@ -1,6 +1,7 @@
 import React from "react";
 import type { Book } from "../../types";
 import { useNavigate } from "react-router-dom";
+import { getStaticBaseUrl } from "../../utils/getApiBaseUrl";
 
 interface Props {
   book: Book;
@@ -8,6 +9,7 @@ interface Props {
 
 const BookCard: React.FC<Props> = ({ book }) => {
   const navigate = useNavigate();
+  const baseStaticUrl = getStaticBaseUrl();
 
   const handleClick = () => {
     navigate(`/book/${book.id}`);
@@ -19,7 +21,7 @@ const BookCard: React.FC<Props> = ({ book }) => {
       className="cursor-pointer bg-white dark:bg-background border border-gray-300 dark:border-gray-700 shadow-lg rounded-2xl overflow-hidden transition-transform transform hover:scale-[1.03] hover:shadow-xl duration-300"
     >
       <img
-        src={`http://localhost:5209${
+        src={`${baseStaticUrl}${
           book.coverImageUrl ?? "/Images/books/default.jpg"
         }`}
         alt={book.title}

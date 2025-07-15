@@ -1,6 +1,7 @@
 import React from "react";
 import ConfirmDialog from "../components/common/ConfirmDialog";
 import { useSuggestionActions } from "../hooks/useSuggestionActions";
+import { getStaticBaseUrl } from "../utils/getApiBaseUrl";
 
 const Suggestions: React.FC = () => {
   const {
@@ -50,7 +51,7 @@ const Suggestions: React.FC = () => {
               >
                 {s.coverImageUrl && (
                   <img
-                    src={`http://localhost:5209${
+                    src={`${getStaticBaseUrl()}${
                       s.coverImageUrl ?? "/Images/books/default.jpg"
                     }`}
                     alt={s.bookTitle}

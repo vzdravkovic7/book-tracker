@@ -4,6 +4,7 @@ import {
   LogLevel,
 } from "@microsoft/signalr";
 import type { Suggestion } from "../types/suggestion";
+import { getSignalRBaseUrl } from "../utils/getApiBaseUrl";
 
 let connection: HubConnection | null = null;
 
@@ -14,7 +15,7 @@ export const connectSuggestionSocket = async (
   if (connection) return;
 
   connection = new HubConnectionBuilder()
-    .withUrl("http://localhost:5209/hubs/suggestions")
+    .withUrl(`${getSignalRBaseUrl()}/hubs/suggestions`)
     .withAutomaticReconnect()
     .configureLogging(LogLevel.Information)
     .build();

@@ -4,6 +4,7 @@ import ConfirmDialog from "../components/common/ConfirmDialog";
 import EmailInputDialog from "../components/common/EmailInputDialog";
 import FavoriteButton from "../components/books/FavoriteButton";
 import RatingStars from "../components/books/RatingStars";
+import { getStaticBaseUrl } from "../utils/getApiBaseUrl";
 
 const BookDetails: React.FC = () => {
   const {
@@ -43,7 +44,7 @@ const BookDetails: React.FC = () => {
 
           <div className="flex flex-col sm:flex-row gap-6">
             <img
-              src={`http://localhost:5209${
+              src={`${getStaticBaseUrl()}${
                 book.coverImageUrl ?? "/Images/books/default.jpg"
               }`}
               alt={book.title}

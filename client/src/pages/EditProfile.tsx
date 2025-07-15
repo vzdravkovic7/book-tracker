@@ -12,6 +12,7 @@ import { useImagePreview } from "../hooks/useImagePreview";
 import { getFileFromInputEvent } from "../utils/imageUtils";
 import { isPhoneValid, isPasswordConfirmed } from "../utils/formValidators";
 import { baseUserFields } from "../config/formFieldConfigs";
+import { getStaticBaseUrl } from "../utils/getApiBaseUrl";
 
 const EditProfile: React.FC = () => {
   const [form, setForm] = useState<EditUserDTO | null>(null);
@@ -149,7 +150,7 @@ const EditProfile: React.FC = () => {
         <ProfileImageUpload
           previewUrl={
             previewImage ||
-            `http://localhost:5209${
+            `${getStaticBaseUrl()}${
               form.profileImageUrl ?? "/Images/profile/default.jpg"
             }`
           }
