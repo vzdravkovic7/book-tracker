@@ -13,7 +13,8 @@ public class EmailService {
 
     public async Task SendSuggestionInvitationEmailAsync(string toEmail, string password, User fromUser, Book book, Guid suggestionId) {
         var subject = $"You've been invited to Book Tracker!";
-        var acceptLink = $"http://localhost:5173/?suggestionId={suggestionId}";
+        var clientBaseUrl = _config["ClientBaseUrl"]?.TrimEnd('/') ?? "http://localhost:5173";
+        var acceptLink = $"{clientBaseUrl}/?suggestionId={suggestionId}";
         const string imageCid = "bookcover";
 
         // Book image path resolution

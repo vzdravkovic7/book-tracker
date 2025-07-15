@@ -4,6 +4,7 @@ import ConfirmDialog from "../components/common/ConfirmDialog";
 import userService from "../services/userService";
 import type { User } from "../types";
 import FavoriteBooksCarousel from "../components/books/FavoriteBooksCarousel";
+import { getStaticBaseUrl } from "../utils/getApiBaseUrl";
 
 const Profile: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -44,7 +45,7 @@ const Profile: React.FC = () => {
 
         <div className="flex flex-col items-center gap-4">
           <img
-            src={`http://localhost:5209${
+            src={`${getStaticBaseUrl()}${
               user.profileImageUrl ?? "/Images/profile/default.jpg"
             }`}
             alt="Profile"

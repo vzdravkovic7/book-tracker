@@ -4,6 +4,7 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json.Serialization;
+using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,10 +46,14 @@ builder.Services
 var corsPolicyName = "AllowFrontend";
 builder.Services.AddCors(options => {
     options.AddPolicy(name: corsPolicyName, policy => {
-        policy.WithOrigins("http://localhost:5173")
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
+        policy.WithOrigins(
+            "http://localhost:5173",          // local Vite dev
+            "http://localhost:3000",          // local Docker frontend OR npm run preview
+            "http://booktracker_frontend:3000" // Docker container
+        )
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials();
     });
 });
 
@@ -87,12 +92,8 @@ app.UseStaticFiles(new StaticFileOptions {
     RequestPath = "/Images"
 });
 
-// Auto-migrate + seed
-using (var scope = app.Services.CreateScope()) {
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
-    db.SeedFromJsonFiles();
-}
+// Auto-migrate + seed with retry logic
+app.Services.WaitForDatabaseAndMigrate();
 
 // Swagger for dev
 if (app.Environment.IsDevelopment()) {

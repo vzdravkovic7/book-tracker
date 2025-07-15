@@ -21,7 +21,7 @@ interface BookQueryParams {
 
 const getBooks = async (params: BookQueryParams) => {
   const cleanedParams = cleanParams(params);
-  const response = await axios.get<PaginatedResponse<Book>>("/books", { params: cleanedParams });
+  const response = await axios.get<PaginatedResponse<Book>>("/Books", { params: cleanedParams });
   return response.data;
 };
 
@@ -30,49 +30,49 @@ function cleanParams(params: Record<string, any>) {
 }
 
 const getGenres = async () => {
-  const response = await axios.get<string[]>("/books/genres");
+  const response = await axios.get<string[]>("/Books/genres");
   return response.data;
 };
 
 const getAuthors = async () => {
-  const response = await axios.get<string[]>("/books/authors");
+  const response = await axios.get<string[]>("/Books/authors");
   return response.data;
 };
 
 const getAllForUser = async (): Promise<BookDetailsDTO[]> => {
-  const res = await axios.get("/books/all");
+  const res = await axios.get("/Books/all");
   return res.data;
 };
 
 const getById = async (id: string): Promise<BookDetailsDTO> => {
-  const res = await axios.get(`/books/${id}`);
+  const res = await axios.get(`/Books/${id}`);
   return res.data;
 };
 
 const create = async (formData: FormData): Promise<Book> => {
-  const res = await axios.post("/books", formData, {
+  const res = await axios.post("/Books", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
   return res.data;
 };
 
 const update = async (id: string, formData: FormData): Promise<Book> => {
-  const res = await axios.put(`/books/${id}`, formData, {
+  const res = await axios.put(`/Books/${id}`, formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
   return res.data;
 };
 
 const remove = async (id: string): Promise<void> => {
-  await axios.delete(`/books/${id}`);
+  await axios.delete(`/Books/${id}`);
 };
 
 const toggleFavorite = async (id: string, isFavourite: boolean): Promise<void> => {
-  await axios.put(`/books/${id}/favorite?isFavourite=${isFavourite}`);
+  await axios.put(`/Books/${id}/favorite?isFavourite=${isFavourite}`);
 };
 
 const getFavourites = async (): Promise<Book[]> => {
-  const res = await axios.get("/books/favourites");
+  const res = await axios.get("/Books/favourites");
   return res.data;
 };
 

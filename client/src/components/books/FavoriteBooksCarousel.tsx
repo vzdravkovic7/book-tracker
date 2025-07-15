@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import bookService from "../../services/bookService";
 import type { Book } from "../../types";
 import { useCarousel } from "../../hooks/useCarousel";
+import { getStaticBaseUrl } from "../../utils/getApiBaseUrl";
 
 const FavoriteBooksCarousel: React.FC = () => {
   const [books, setBooks] = useState<Book[]>([]);
@@ -55,7 +56,7 @@ const FavoriteBooksCarousel: React.FC = () => {
                 className="min-w-[140px] sm:min-w-[160px] cursor-pointer bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-300 dark:border-gray-600 p-2 transition-transform hover:scale-105"
               >
                 <img
-                  src={`http://localhost:5209${
+                  src={`${getStaticBaseUrl()}${
                     book.coverImageUrl ?? "/Images/books/default.jpg"
                   }`}
                   alt={book.title}

@@ -8,6 +8,7 @@ import {
   dateCompletedField,
 } from "../../config/formFieldConfigs";
 import { validateBookForm } from "../../utils/bookFormValidation";
+import { getStaticBaseUrl } from "../../utils/getApiBaseUrl";
 
 import FormError from "../common/FormError";
 import LoadingButton from "../common/LoadingButton";
@@ -179,7 +180,7 @@ const BookForm: React.FC = () => {
         <BookCoverUpload
           previewUrl={
             previewCover ||
-            `http://localhost:5209${
+            `${getStaticBaseUrl()}${
               form.coverImageUrl ?? "/Images/books/default.jpg"
             }`
           }
